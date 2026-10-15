@@ -243,8 +243,8 @@ final class Dream3DScene: SCNScene {
             statusUpdater?("DESCENDING")
         case "time":
             timeBent.toggle()
-            rootNode.speed = timeBent ? 0.25 : 1.0
-            statusUpdater?(timeBent ? "TIME SLOWED" : "TIME RESTORED")
+            cameraNode.camera?.fieldOfView = timeBent ? 94 : 76
+            statusUpdater?(timeBent ? "TIME DISTORTION" : "TIME RESTORED")
         case "gravity":
             gravityInverted.toggle()
             height = gravityInverted ? max(height, 5.0) : 1.65
