@@ -1,0 +1,55 @@
+name: Build Lucid Dream Sim for iOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "LucidDreamSim/**"
+      - "project.yml"
+      - ".github/workflows/ios-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build for iPhone
+        run: |
+          xcodebuild \
+            -project LucidDreamSim.xcodeproj \
+            -scheme LucidDreamSim \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package unsigned IPA
+        run: |
+          APP_PATH="build/DerivedData/Build/Products/Release-iphoneos/LucidDreamSim.app"
+          test -d "$APP_PATH"
+          mkdir -p build/Payload
+          cp -R "$APP_PATH" build/Payload/LucidDreamSim.app
+          cd build
+          /usr/bin/zip -qry LucidDreamSim-unsigned.ipa Payload
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LucidDreamSim-unsigned-IPA
+          path: build/LucidDreamSim-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14
