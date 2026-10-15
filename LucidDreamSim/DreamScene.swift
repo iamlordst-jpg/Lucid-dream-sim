@@ -1,5 +1,6 @@
 import SpriteKit
 import SwiftUI
+import UIKit
 
 final class DreamScene: SKScene {
     private let tile: CGFloat = 42
@@ -12,7 +13,6 @@ final class DreamScene: SKScene {
     private var playerY = 0
     private var currentHUD = DreamHUD.load()
     private var lastMemoryAt = ""
-    private var lastToastTime = TimeInterval.zero
     private let worldSeed: Int = 481516
     var hudUpdater: ((DreamHUD) -> Void)?
     var lastMoveToken = UUID()
@@ -56,8 +56,7 @@ final class DreamScene: SKScene {
         default: return
         }
         let target = CGPoint(x: CGFloat(playerX) * tile, y: CGFloat(playerY) * tile)
-        player.run(.move(to: target, duration: 0.10))
-        updateCamera()
+        cameraNode.run(.move(to: target, duration: 0.10))
         drawNearbyWorld()
         checkDiscovery()
     }
@@ -69,8 +68,11 @@ final class DreamScene: SKScene {
             backgroundColor = currentHUD.alternateReality
                 ? SKColor(red: 0.13, green: 0.025, blue: 0.18, alpha: 1)
                 : SKColor(red: 0.025, green: 0.035, blue: 0.11, alpha: 1)
-            for node in renderedTiles.values {
-                if let tileNode = node as? SKShapeNode { tileNode.run(.colorize(with: tileColor(atX: 0, y: 0), colorBlendFactor: 0.35, duration: 0.4)) }
+            for (key, node) in renderedTiles {
+                guard let coords = parse(key), let tileNode = node as? SKShapeNode else { continue }
+                tileNode.fillColor = tileColor(atX: coords.0, y: coords.1)
+                tileNode.run(.fadeAlpha(to: 0.72, duration: 0.15))
+                tileNode.run(.fadeAlpha(to: 1.0, duration: 0.25))
             }
             showToast(currentHUD.alternateReality ? "REALITY SHIFTED" : "REALITY STABILIZED", tint: .systemPink)
             currentHUD.save()
@@ -100,8 +102,7 @@ final class DreamScene: SKScene {
             playerX = pos.0
             playerY = pos.1
             let target = CGPoint(x: CGFloat(playerX) * tile, y: CGFloat(playerY) * tile)
-            player.run(.move(to: target, duration: 0.25))
-            updateCamera()
+            cameraNode.run(.move(to: target, duration: 0.25))
             drawNearbyWorld()
             checkDiscovery(force: true)
         default:
@@ -179,11 +180,13 @@ final class DreamScene: SKScene {
         }
         let stale = renderedTiles.keys.filter { !needed.contains($0) }
         for key in stale { renderedTiles[key]?.removeFromParent(); renderedTiles.removeValue(forKey: key) }
-        for (key, node) in manifestNodes {
-            if let coords = parse(key), abs(coords.0 - playerX) > viewRadius + 3 || abs(coords.1 - playerY) > viewRadius + 3 {
-                node.removeFromParent()
-                manifestNodes.removeValue(forKey: key)
-            }
+        let distantManifestKeys = manifestNodes.keys.filter { key in
+            guard let coords = parse(key) else { return true }
+            return abs(coords.0 - playerX) > viewRadius + 3 || abs(coords.1 - playerY) > viewRadius + 3
+        }
+        for key in distantManifestKeys {
+            manifestNodes[key]?.removeFromParent()
+            manifestNodes.removeValue(forKey: key)
         }
     }
 
