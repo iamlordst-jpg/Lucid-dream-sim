@@ -130,8 +130,7 @@ final class Dream3DScene: SCNScene {
                         orb.firstMaterial?.diffuse.contents = UIColor.cyan
                         orb.firstMaterial?.emission.contents = UIColor.cyan
                         let glimmer = SCNNode(geometry: orb)
-                        glimmer.position = SCNVector3(Float(x) * tileSize, 0.2, Float(z) * tileSize)
-                        rootNode.addChildNode(glimmer)
+                        glimmer.position = SCNVector3(0, 0.22, 0)
                         node.addChildNode(glimmer)
                     }
                     if h > 975 {
@@ -242,7 +241,7 @@ final class Dream3DScene: SCNScene {
             statusUpdater?("DESCENDING")
         case "time":
             timeBent.toggle()
-            sceneTime = timeBent ? 0.25 : 1.0
+            rootNode.speed = timeBent ? 0.25 : 1.0
             statusUpdater?(timeBent ? "TIME SLOWED" : "TIME RESTORED")
         case "gravity":
             gravityInverted.toggle()
