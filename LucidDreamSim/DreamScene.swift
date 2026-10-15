@@ -157,8 +157,8 @@ final class DreamScene: SKScene {
                         star.fillColor = currentHUD.alternateReality ? .systemPink : .cyan
                         star.strokeColor = .clear
                         star.glowWidth = 4
-                        star.position = CGPoint(x: rect.position.x + CGFloat((h % 17) - 8),
-                                                y: rect.position.y + CGFloat((h % 13) - 6))
+                        star.position = CGPoint(x: CGFloat((h % 17) - 8),
+                                                y: CGFloat((h % 13) - 6))
                         star.zPosition = -5
                         addChild(star)
                         node.userData = NSMutableDictionary()
@@ -170,7 +170,7 @@ final class DreamScene: SKScene {
                         arch.strokeColor = currentHUD.alternateReality ? .systemPink : .systemTeal
                         arch.lineWidth = 2
                         arch.glowWidth = 5
-                        arch.position = CGPoint(x: rect.position.x, y: rect.position.y + 5)
+                        arch.position = CGPoint(x: 0, y: 5)
                         arch.zPosition = 2
                         addChild(arch)
                         node.addChild(arch)
