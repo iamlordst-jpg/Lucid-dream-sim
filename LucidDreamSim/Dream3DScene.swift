@@ -11,6 +11,8 @@ final class Dream3DScene: SCNScene {
     private var crystals: [String: SCNNode] = [:]
     private var playerX = 0
     private var playerZ = 0
+    private var worldX: Float = 0
+    private var worldZ: Float = 0
     private var height: Float = 1.65
     private var alternateReality = false
     private var flightEnabled = false
@@ -266,10 +268,13 @@ final class Dream3DScene: SCNScene {
         case "right": dx = rightX; dz = rightZ
         default: return
         }
-        // Round to a stable world grid step; movement directions now follow the camera correctly.
-        playerX += Int(dx.rounded())
-        playerZ += Int(dz.rounded())
-        cameraNode.runAction(.move(to: SCNVector3(Float(playerX) * tileSize, height, Float(playerZ) * tileSize), duration: 0.18))
+        // Move a short, walkable distance per tap, relative to where the camera faces.
+        let distance: Float = 2.4
+        worldX += dx * distance
+        worldZ += dz * distance
+        playerX = Int((worldX / tileSize).rounded())
+        playerZ = Int((worldZ / tileSize).rounded())
+        cameraNode.runAction(.move(to: SCNVector3(worldX, height, worldZ), duration: 0.18))
         refreshWorld()
         soundUpdater?("step")
     }
@@ -289,7 +294,7 @@ final class Dream3DScene: SCNScene {
             let geo = SCNSphere(radius: 0.18)
             geo.firstMaterial = material(UIColor(red: 0.78, green: 0.83, blue: 0.85, alpha: 1), roughness: 0.3)
             let node = SCNNode(geometry: geo)
-            node.position = SCNVector3(Float(playerX) * tileSize + 1.2, 1.1, Float(playerZ - 1) * tileSize)
+            node.position = SCNVector3(worldX - sin(cameraNode.eulerAngles.y) * 2.2, 1.1, worldZ - cos(cameraNode.eulerAngles.y) * 2.2)
             node.runAction(.repeatForever(.sequence([.scale(to: 1.12, duration: 1.2), .scale(to: 0.88, duration: 1.2)])))
             rootNode.addChildNode(node)
             crystals[k] = node
@@ -304,7 +309,9 @@ final class Dream3DScene: SCNScene {
             if let target = targets.last {
                 playerX = target.0
                 playerZ = target.1
-                cameraNode.position = SCNVector3(Float(playerX) * tileSize, height, Float(playerZ) * tileSize)
+                worldX = Float(playerX) * tileSize
+                worldZ = Float(playerZ) * tileSize
+                cameraNode.position = SCNVector3(worldX, height, worldZ)
                 refreshWorld()
                 statusUpdater?("MEMORY JUMP")
                 soundUpdater?("teleport")
@@ -312,7 +319,7 @@ final class Dream3DScene: SCNScene {
         case "flight":
             flightEnabled.toggle()
             height = flightEnabled ? 5.0 : 1.65
-            cameraNode.runAction(.move(to: SCNVector3(Float(playerX) * tileSize, height, Float(playerZ) * tileSize), duration: 0.45))
+            cameraNode.runAction(.move(to: SCNVector3(worldX, height, worldZ), duration: 0.45))
             statusUpdater?(flightEnabled ? "FLOATING" : "GROUNDED")
             soundUpdater?("flight")
         case "ascend":
