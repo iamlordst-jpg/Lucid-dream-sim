@@ -139,16 +139,18 @@ final class Dream3DScene: SCNScene {
                 }
             }
         }
-        for (k, node) in tiles where !needed.contains(k) {
-            node.removeFromParentNode()
+        let staleTileKeys = tiles.keys.filter { !needed.contains($0) }
+        for k in staleTileKeys {
+            tiles[k]?.removeFromParentNode()
             tiles.removeValue(forKey: k)
         }
-        for (k, node) in crystals {
+        let staleCrystalKeys = crystals.keys.filter { k in
             let parts = k.split(separator: ",").compactMap { Int($0) }
-            if parts.count == 2 && (abs(parts[0] - playerX) > renderRadius + 2 || abs(parts[1] - playerZ) > renderRadius + 2) {
-                node.removeFromParentNode()
-                crystals.removeValue(forKey: k)
-            }
+            return parts.count != 2 || abs(parts[0] - playerX) > renderRadius + 2 || abs(parts[1] - playerZ) > renderRadius + 2
+        }
+        for k in staleCrystalKeys {
+            crystals[k]?.removeFromParentNode()
+            crystals.removeValue(forKey: k)
         }
     }
 
