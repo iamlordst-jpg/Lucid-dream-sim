@@ -172,12 +172,26 @@ final class Dream3DScene: SCNScene {
         }
     }
 
+    func look(deltaX: CGFloat, deltaY: CGFloat) {
+        cameraNode.eulerAngles.y -= Float(deltaX) * 0.004
+        cameraNode.eulerAngles.x = min(max(cameraNode.eulerAngles.x - Float(deltaY) * 0.003, -0.85), 0.85)
+    }
+
     func movePlayer(direction: String) {
+        let yaw = cameraNode.eulerAngles.y
         switch direction {
-        case "up": playerZ -= 1
-        case "down": playerZ += 1
-        case "left": playerX -= 1
-        case "right": playerX += 1
+        case "up":
+            playerX += Int(sin(yaw).rounded())
+            playerZ += Int((-cos(yaw)).rounded())
+        case "down":
+            playerX -= Int(sin(yaw).rounded())
+            playerZ -= Int((-cos(yaw)).rounded())
+        case "left":
+            playerX += Int((-cos(yaw)).rounded())
+            playerZ += Int((-sin(yaw)).rounded())
+        case "right":
+            playerX += Int(cos(yaw).rounded())
+            playerZ += Int(sin(yaw).rounded())
         default: return
         }
         cameraNode.runAction(.move(to: SCNVector3(Float(playerX) * tileSize, height, Float(playerZ) * tileSize), duration: 0.12))
