@@ -288,7 +288,7 @@ final class DreamSoundscape {
         guard let player = try? AVAudioPlayer(data: Self.makeWave(seconds: settings.0, frequency: settings.1, ambient: false)) else { return }
         effectPlayers.removeAll { !$0.isPlaying }
         effectPlayers.append(player)
-        player.volume = settings.2
+        player.volume = Float(settings.2)
         player.prepareToPlay()
         player.play()
     }
