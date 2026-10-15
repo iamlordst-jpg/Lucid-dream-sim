@@ -1,0 +1,26 @@
+name: LucidDreamSim
+options:
+  bundleIdPrefix: com.st
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    TARGETED_DEVICE_FAMILY: "1"
+targets:
+  LucidDreamSim:
+    type: application
+    platform: iOS
+    sources:
+      - LucidDreamSim
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.st.luciddreamsim
+        PRODUCT_NAME: LucidDreamSim
+        INFOPLIST_KEY_CFBundleDisplayName: Lucid Dream Sim
+        INFOPLIST_KEY_UIUserInterfaceStyle: Dark
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGNING_ALLOWED: NO
