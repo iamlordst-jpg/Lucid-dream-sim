@@ -160,7 +160,6 @@ final class DreamScene: SKScene {
                         star.position = CGPoint(x: CGFloat((h % 17) - 8),
                                                 y: CGFloat((h % 13) - 6))
                         star.zPosition = -5
-                        addChild(star)
                         node.userData = NSMutableDictionary()
                         node.userData?["starName"] = "dream"
                         node.addChild(star)
@@ -172,7 +171,6 @@ final class DreamScene: SKScene {
                         arch.glowWidth = 5
                         arch.position = CGPoint(x: 0, y: 5)
                         arch.zPosition = 2
-                        addChild(arch)
                         node.addChild(arch)
                     }
                 }
