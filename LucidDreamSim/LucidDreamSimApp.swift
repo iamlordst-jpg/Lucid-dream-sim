@@ -168,25 +168,31 @@ struct Dream3DView: UIViewRepresentable {
     let actionToken: UUID
     @Binding var status: String
 
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
     func makeUIView(context: Context) -> SCNView {
         let view = SCNView()
-        view.scene = Dream3DScene()
+        let scene = Dream3DScene()
+        view.scene = scene
+        context.coordinator.scene = scene
         view.backgroundColor = UIColor(red: 0.018, green: 0.026, blue: 0.09, alpha: 1)
         view.allowsCameraControl = false
         view.autoenablesDefaultLighting = false
         view.antialiasingMode = .none
         view.preferredFramesPerSecond = 30
         view.isPlaying = true
-        if let scene = view.scene as? Dream3DScene {
-            scene.statusUpdater = { message in
-                DispatchQueue.main.async { status = message }
-            }
+        scene.statusUpdater = { message in
+            DispatchQueue.main.async { status = message }
         }
+        let pan = UIPanGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handlePan(_:)))
+        pan.maximumNumberOfTouches = 1
+        view.addGestureRecognizer(pan)
         return view
     }
 
     func updateUIView(_ view: SCNView, context: Context) {
         guard let scene = view.scene as? Dream3DScene else { return }
+        context.coordinator.scene = scene
         scene.statusUpdater = { message in
             DispatchQueue.main.async { status = message }
         }
@@ -197,6 +203,22 @@ struct Dream3DView: UIViewRepresentable {
         if scene.lastActionToken != actionToken {
             scene.lastActionToken = actionToken
             scene.performDreamAction(dreamAction)
+        }
+    }
+
+    final class Coordinator: NSObject {
+        weak var scene: Dream3DScene?
+        private var previousTranslation = CGPoint.zero
+
+        @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
+            let translation = gesture.translation(in: gesture.view)
+            let dx = translation.x - previousTranslation.x
+            let dy = translation.y - previousTranslation.y
+            scene?.look(deltaX: dx, deltaY: dy)
+            previousTranslation = translation
+            if gesture.state == .ended || gesture.state == .cancelled || gesture.state == .failed {
+                previousTranslation = .zero
+            }
         }
     }
 }
